@@ -1,0 +1,48 @@
+# MITRE Security Pipeline Configuration
+agents:
+  agent1:
+    enabled: true
+    model_path: "agent1/models/lstm_log_classifier.h5"
+    tokenizer_path: "agent1/preprocessors/tokenizer.pkl"
+    label_encoder_path: "agent1/preprocessors/label_encoder.pkl"
+    confidence_threshold: 0.7
+    
+  agent2:
+    enabled: true
+    policy_path: "agent2/policies/"
+    auto_execute: true
+    response_mode: "auto"  # auto, manual, hybrid
+
+mitre:
+  knowledge_base: "mitre_mapper/mitre_knowledge.json"
+  mapping_rules: "mitre_mapper/mapping_rules.yaml"
+  risk_thresholds:
+    critical: 80
+    high: 60
+    medium: 40
+    low: 20
+  
+  technique_weights:
+    T1059: 0.9    # Command execution
+    T1068: 0.95   # Exploitation
+    T1071: 0.7    # C2
+    T1027: 0.6    # Obfuscation
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/pipeline.log"
+  max_size: "10MB"
+  backup_count: 5
+
+output:
+  save_results: true
+  output_dir: "output/"
+  format: "json"
+  max_alerts_per_file: 1000
+
+api:
+  enabled: false
+  host: "127.0.0.1"
+  port: 8000
+  debug: false

@@ -1,0 +1,203 @@
+# MITRE ATT&CK Mapping Rules
+# Patterns to map log entries to MITRE techniques
+
+version: "1.0"
+description: "Pattern-based mapping rules for MITRE ATT&CK"
+
+# Pattern rules for specific techniques
+rules:
+  powershell_execution:
+    description: "Detect PowerShell command execution"
+    patterns:
+      - "powershell"
+      - "powershell.exe"
+      - "pwsh"
+      - "iex\\s"
+      - "invoke-expression"
+      - "-enc\\s"
+      - "-encodedcommand"
+      - "-e\\s"
+    mitre_techniques:
+      - "T1059.001"
+      - "T1059"
+    confidence: 0.8
+    severity: high
+    
+  cmd_execution:
+    description: "Detect Windows command shell execution"
+    patterns:
+      - "cmd\\.exe"
+      - "command.*line"
+      - "cmd\\s+/c"
+      - "cmd\\s+/k"
+      - "command.*prompt"
+    mitre_techniques:
+      - "T1059.003"
+      - "T1059"
+    confidence: 0.7
+    severity: medium
+    
+  scheduled_task_creation:
+    description: "Detect scheduled task creation for persistence"
+    patterns:
+      - "schtasks"
+      - "scheduled.*task"
+      - "task.*scheduler"
+      - "at\\s+\\d"
+      - "create.*task"
+    mitre_techniques:
+      - "T1053.005"
+      - "T1547"
+    confidence: 0.75
+    severity: high
+    
+  registry_persistence:
+    description: "Detect registry modifications for persistence"
+    patterns:
+      - "reg.*run"
+      - "hklm.*run"
+      - "hkcu.*run"
+      - "registry.*run"
+      - "reg.*add.*run"
+      - "currentversion.*run"
+    mitre_techniques:
+      - "T1547.001"
+      - "T1547"
+    confidence: 0.8
+    severity: high
+    
+  process_injection:
+    description: "Detect process injection techniques"
+    patterns:
+      - "createRemoteThread"
+      - "virtualallocex"
+      - "writeprocessmemory"
+      - "process.*hollow"
+      - "reflective.*dll"
+    mitre_techniques:
+      - "T1055"
+    confidence: 0.85
+    severity: critical
+    
+  network_c2:
+    description: "Detect command and control communication"
+    patterns:
+      - "beacon"
+      - "callback"
+      - "c2"
+      - "command.*control"
+      - "heartbeat"
+      - "checkin"
+    mitre_techniques:
+      - "T1071"
+      - "T1095"
+    confidence: 0.7
+    severity: high
+    
+  obfuscation:
+    description: "Detect obfuscated code or data"
+    patterns:
+      - "base64"
+      - "xor.*encrypt"
+      - "obfuscated"
+      - "encoded.*string"
+      - "encrypted.*payload"
+    mitre_techniques:
+      - "T1027"
+      - "T1140"
+    confidence: 0.65
+    severity: medium
+    
+  privilege_escalation:
+    description: "Detect privilege escalation attempts"
+    patterns:
+      - "runas"
+      - "sudo"
+      - "elevate.*privileges"
+      - "getsystem"
+      - "bypassuac"
+    mitre_techniques:
+      - "T1068"
+      - "T1548"
+    confidence: 0.8
+    severity: critical
+
+# Map classifications from Agent 1 to MITRE techniques
+classification_mapping:
+  malicious:
+    - "T1204"  # User Execution
+    - "T1059"  # Command and Scripting Interpreter
+    - "T1027"  # Obfuscated Files or Information
+    severity: high
+    
+  malware:
+    - "T1204"  # User Execution
+    - "T1027"  # Obfuscated Files or Information
+    - "T1547"  # Persistence
+    severity: critical
+    
+  attack:
+    - "T1190"  # Exploit Public-Facing Application
+    - "T1068"  # Exploitation for Privilege Escalation
+    severity: critical
+    
+  suspicious:
+    - "T1059"  # Command and Scripting Interpreter
+    - "T1071"  # Application Layer Protocol
+    - "T1027"  # Obfuscated Files or Information
+    severity: medium
+    
+  anomaly:
+    - "T1082"  # System Information Discovery
+    - "T1016"  # System Network Configuration Discovery
+    severity: low
+
+# Map IOC types to MITRE techniques
+ioc_mapping:
+  ip:
+    - "T1071"  # Application Layer Protocol
+    - "T1095"  # Non-Application Layer Protocol
+    confidence: 0.7
+    
+  domain:
+    - "T1071"  # Application Layer Protocol
+    - "T1568"  # Dynamic Resolution
+    confidence: 0.7
+    
+  url:
+    - "T1105"  # Ingress Tool Transfer
+    - "T1566"  # Phishing
+    confidence: 0.6
+    
+  md5:
+    - "T1027"  # Obfuscated Files or Information
+    - "T1140"  # Deobfuscate/Decode Files or Information
+    confidence: 0.5
+    
+  sha256:
+    - "T1027"  # Obfuscated Files or Information
+    - "T1140"  # Deobfuscate/Decode Files or Information
+    confidence: 0.5
+    
+  file_path:
+    - "T1105"  # Ingress Tool Transfer
+    - "T1547"  # Boot or Logon Autostart Execution
+    confidence: 0.4
+    
+  cmd:
+    - "T1059"  # Command and Scripting Interpreter
+    - "T1204"  # User Execution
+    confidence: 0.8
+
+# Confidence modifiers
+confidence_modifiers:
+  multiple_matches: 0.1  # Increase confidence for multiple pattern matches
+  high_severity_classification: 0.15  # Increase if classification is high severity
+  ioc_correlation: 0.2   # Increase if multiple IOCs correlate
+
+# Risk score calculation
+risk_calculation:
+  base_weight: 1.0
+  technique_weight_multiplier: 1.5
+  confidence_weight: 2.0
+  max_risk_score: 100

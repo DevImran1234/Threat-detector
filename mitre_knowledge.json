@@ -1,0 +1,111 @@
+{
+    "version": "1.0",
+    "last_updated": "2024-01-15",
+    "description": "MITRE ATT&CK Knowledge Base for Security Pipeline",
+    
+    "tactics": {
+      "TA0001": "Initial Access",
+      "TA0002": "Execution",
+      "TA0003": "Persistence",
+      "TA0004": "Privilege Escalation",
+      "TA0005": "Defense Evasion",
+      "TA0006": "Credential Access",
+      "TA0007": "Discovery",
+      "TA0008": "Lateral Movement",
+      "TA0009": "Collection",
+      "TA0010": "Exfiltration",
+      "TA0011": "Command and Control"
+    },
+    
+    "techniques": {
+      "T1059": {
+        "id": "T1059",
+        "name": "Command and Scripting Interpreter",
+        "tactic": "Execution",
+        "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries.",
+        "platforms": ["Windows", "Linux", "macOS"],
+        "mitigation": "Restrict command-line interpreters, use application whitelisting."
+      },
+      
+      "T1059.001": {
+        "id": "T1059.001",
+        "name": "PowerShell",
+        "tactic": "Execution",
+        "description": "Adversaries may abuse PowerShell to execute malicious commands and scripts.",
+        "parent": "T1059",
+        "detection": "Monitor for unusual PowerShell command-line arguments, script block logging."
+      },
+      
+      "T1059.003": {
+        "id": "T1059.003",
+        "name": "Windows Command Shell",
+        "tactic": "Execution",
+        "description": "Adversaries may abuse the Windows command shell for execution.",
+        "parent": "T1059",
+        "detection": "Monitor for command-line arguments associated with malicious activity."
+      },
+      
+      "T1071": {
+        "id": "T1071",
+        "name": "Application Layer Protocol",
+        "tactic": "Command and Control",
+        "description": "Adversaries may use application layer protocols for communication with compromised systems.",
+        "subtypes": ["Web Protocols", "File Transfer Protocols", "Mail Protocols"]
+      },
+      
+      "T1547": {
+        "id": "T1547",
+        "name": "Boot or Logon Autostart Execution",
+        "tactic": "Persistence",
+        "description": "Adversaries may configure system settings to automatically execute code at boot or logon.",
+        "subtechniques": ["T1547.001", "T1547.002", "T1547.003"]
+      },
+      
+      "T1547.001": {
+        "id": "T1547.001",
+        "name": "Registry Run Keys / Startup Folder",
+        "tactic": "Persistence",
+        "description": "Adversaries may achieve persistence by adding programs to startup folders or registry run keys.",
+        "parent": "T1547",
+        "detection": "Monitor registry modifications to Run keys, startup folder changes."
+      },
+      
+      "T1027": {
+        "id": "T1027",
+        "name": "Obfuscated Files or Information",
+        "tactic": "Defense Evasion",
+        "description": "Adversaries may obfuscate files or information to make them difficult to discover or analyze.",
+        "examples": ["Encoded payloads", "Compressed files", "Steganography"]
+      },
+      
+      "T1068": {
+        "id": "T1068",
+        "name": "Exploitation for Privilege Escalation",
+        "tactic": "Privilege Escalation",
+        "description": "Adversaries may exploit software vulnerabilities to elevate privileges.",
+        "risk": "High",
+        "mitigation": "Regular patching, privilege separation, exploit protection."
+      },
+      
+      "T1204": {
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "description": "Adversaries may rely on user interaction to execute malicious code.",
+        "examples": ["Malicious links", "Email attachments", "User-initiated downloads"]
+      },
+      
+      "T1566": {
+        "id": "T1566",
+        "name": "Phishing",
+        "tactic": "Initial Access",
+        "description": "Adversaries may send phishing messages to gain access to victim systems.",
+        "subtechniques": ["T1566.001", "T1566.002"]
+      }
+    },
+    
+    "references": {
+      "mitre_attack": "https://attack.mitre.org/",
+      "github_cti": "https://github.com/mitre/cti"
+    }
+  }

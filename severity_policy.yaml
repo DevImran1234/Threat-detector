@@ -1,0 +1,31 @@
+login_attempt:
+  thresholds: { low: 0.3, medium: 0.5, high: 0.8 }
+  actions:
+    low: ["log_only"]
+    medium: ["notify"]
+    high: ["notify_admin"]
+    critical: ["notify_admin", "isolate_user"]
+
+malware_alert:
+  thresholds: { low: 0.4, medium: 0.6, high: 0.8 }
+  actions:
+    low: ["log_only"]
+    medium: ["notify"]
+    high: ["notify_admin", "quarantine_host"]
+    critical: ["escalate_ir", "block_ioc"]
+
+data_exfiltration:
+  thresholds: { low: 0.4, medium: 0.6, high: 0.8 }
+  actions:
+    low: ["log_only"]
+    medium: ["notify"]
+    high: ["notify_admin", "block_egress"]
+    critical: ["escalate_ir", "block_ioc"]
+
+network_traffic:              # used by live capture (network_capture.py)
+  thresholds: { low: 0.2, medium: 0.4, high: 0.7 }
+  actions:
+    low: ["log_only"]
+    medium: ["notify"]
+    high: ["notify_admin"]
+    critical: ["escalate_ir", "block_ioc"]
