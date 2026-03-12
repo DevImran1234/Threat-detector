@@ -3,6 +3,7 @@ Main Orchestrator for MITRE Security Pipeline
 Coordinates Agent 1 → MITRE Mapper → Agent 2
 """
 
+import os
 import time
 import json
 import yaml
@@ -39,17 +40,17 @@ class MITREOrchestrator:
     def initialize_agents(self):
         """Lazy initialization of agents"""
         if self.agent1 is None:
-            from agent1.agent1_interface import Agent1
+            from agent1_interface import Agent1
             self.agent1 = Agent1()
             print("✅ Agent 1 initialized")
         
         if self.mitre_mapper is None:
-            from mitre_mapper.mitre_engine import MITREMapper
+            from mitre_engine import MITREMapper
             self.mitre_mapper = MITREMapper(self.config.get('mitre', {}))
             print("✅ MITRE Mapper initialized")
         
         if self.agent2 is None:
-            from agent2.agent.decision_engine import DecisionAgent
+            from decision_engine import DecisionAgent
             self.agent2 = DecisionAgent(self.config.get('agent2', {}))
             print("✅ Agent 2 initialized")
     

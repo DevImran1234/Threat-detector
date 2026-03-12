@@ -14,7 +14,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from main_orchestrator import MITREOrchestrator
-from shared.utils import setup_logging, save_result_to_file
+from utils import setup_logging
 
 def main():
     parser = argparse.ArgumentParser(description='MITRE Security Pipeline')
@@ -46,23 +46,23 @@ def main():
         print("MITRE SECURITY PIPELINE - RESULT")
         print("="*70)
         print(f"Log: {args.log[:200]}...")
-        print(f"\nClassification: {result['classification']['label']} "
-              f"(Confidence: {result['classification']['confidence']:.2%})")
+        print(f"\nClassification: {result['agent1']['label']} "
+              f"(Confidence: {result['agent1']['confidence']:.2%})")
         
-        if result['mitre_mapping']['mitre_techniques']:
+        if result['mitre']['mitre_techniques']:
             print("\nMITRE Techniques Detected:")
-            for tech in result['mitre_mapping']['mitre_techniques']:
+            for tech in result['mitre']['mitre_techniques']:
                 print(f"  • {tech['technique_id']}: {tech['name']} "
                       f"(Confidence: {tech['confidence']:.2%})")
         else:
             print("\nNo MITRE techniques detected")
         
-        print(f"\nRisk Score: {result['mitre_mapping']['risk_score']:.1f}/100")
-        print(f"Primary Tactic: {result['mitre_mapping']['primary_tactic']}")
+        print(f"\nRisk Score: {result['mitre']['risk_score']:.1f}/100")
+        print(f"Primary Tactic: {result['mitre']['primary_tactic']}")
         
-        if result['response']['actions']:
+        if result['agent2']['actions']:
             print(f"\nResponse Actions:")
-            for action in result['response']['actions']:
+            for action in result['agent2']['actions']:
                 print(f"  • {action}")
         else:
             print("\nNo response actions required")
@@ -141,7 +141,9 @@ def main():
     
     # Save results
     if results:
-        save_result_to_file(results, args.output)
+        os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
+        with open(args.output, 'w') as f:
+            json.dump(results, f, indent=2)
         logger.info(f"Results saved to {args.output}")
     
     logger.info("Pipeline execution completed")

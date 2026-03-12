@@ -6,10 +6,10 @@ Can be used as standalone service or as part of pipeline
 import sys
 import os
 
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add current directory to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from agent.decision_engine import DecisionAgent
+from decision_engine import DecisionAgent
 import json
 
 def main():

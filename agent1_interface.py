@@ -14,6 +14,12 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+# Import mock models to ensure pickle can deserialize them
+try:
+    from mock_models import SimpleTokenizer, SimpleLabelEncoder
+except ImportError:
+    pass
+
 
 class Agent1:
     def __init__(self,
