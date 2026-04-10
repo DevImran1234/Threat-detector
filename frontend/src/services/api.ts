@@ -45,6 +45,43 @@ export interface PipelineResult {
 }
 
 class APIService {
+  async getExternalThreatIntel(threat: string): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/external-threat-intel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ threat }),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching external threat intelligence:', error);
+      throw error;
+    }
+  }
+
+  async detectAnomaly(threat: string): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/anomaly-detection`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ threat }),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error detecting anomaly:', error);
+      throw error;
+    }
+  }
   async analyzeLogs(logText: string): Promise<PipelineResult> {
     try {
       const response = await fetch(`${API_BASE_URL}/analyze`, {

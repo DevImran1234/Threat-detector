@@ -16,6 +16,11 @@ function App() {
   const [error, setError] = useState('');
   const [isHealthy, setIsHealthy] = useState(true);
 
+  const [externalIntel, setExternalIntel] = useState<any>(null);
+  const [anomalyResult, setAnomalyResult] = useState<any>(null);
+  const [intelLoading, setIntelLoading] = useState(false);
+  const [anomalyLoading, setAnomalyLoading] = useState(false);
+
   // Check backend health on mount
   useEffect(() => {
     const checkHealth = async () => {
@@ -44,9 +49,30 @@ function App() {
     setIsLoading(true);
     setError('');
 
+    setExternalIntel(null);
+    setAnomalyResult(null);
+
     try {
       const analysisResult = await APIService.analyzeLogs(logText);
       setResult(analysisResult);
+      // Fetch external threat intelligence
+      setIntelLoading(true);
+      try {
+        const intel = await APIService.getExternalThreatIntel(logText);
+        setExternalIntel(intel);
+      } catch (intelErr) {
+        setExternalIntel({ error: 'Failed to fetch external threat intelligence.' });
+      }
+      setIntelLoading(false);
+      // Fetch anomaly detection
+      setAnomalyLoading(true);
+      try {
+        const anomaly = await APIService.detectAnomaly(logText);
+        setAnomalyResult(anomaly);
+      } catch (anomalyErr) {
+        setAnomalyResult({ error: 'Failed to detect anomaly.' });
+      }
+      setAnomalyLoading(false);
     } catch (err) {
       console.error('Analysis error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -128,6 +154,34 @@ function App() {
 
                   <div className="grid-item span-2">
                     <MITRETechniquesPanel result={result.mitre} />
+                  </div>
+
+                  {/* External Threat Intelligence Section */}
+                  <div className="grid-item span-2">
+                    <div className="external-intel-panel">
+                      <h3>🌐 External Threat Intelligence</h3>
+                      {intelLoading ? (
+                        <div>Loading external intelligence...</div>
+                      ) : externalIntel && !externalIntel.error ? (
+                        <pre style={{ whiteSpace: 'pre-wrap', background: '#f8f8f8', padding: '1em', borderRadius: '8px' }}>{JSON.stringify(externalIntel, null, 2)}</pre>
+                      ) : (
+                        <div style={{ color: 'red' }}>{externalIntel?.error}</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Anomaly Detection Section */}
+                  <div className="grid-item span-2">
+                    <div className="anomaly-detection-panel">
+                      <h3>🧬 Anomaly Detection</h3>
+                      {anomalyLoading ? (
+                        <div>Detecting anomaly...</div>
+                      ) : anomalyResult && !anomalyResult.error ? (
+                        <pre style={{ whiteSpace: 'pre-wrap', background: '#f8f8f8', padding: '1em', borderRadius: '8px' }}>{JSON.stringify(anomalyResult, null, 2)}</pre>
+                      ) : (
+                        <div style={{ color: 'red' }}>{anomalyResult?.error}</div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid-item span-2">

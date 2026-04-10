@@ -20,13 +20,20 @@ import uvicorn
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Setup basic logging first
+# Setup basic logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize orchestrator globally
 orchestrator = None
 init_error = None
+
+# Import agents
+from agents import ExternalThreatIntelligenceAgent, AnomalyDetectionAgent
+
+# Initialize agents
+ext_threat_agent = ExternalThreatIntelligenceAgent()
+anomaly_agent = AnomalyDetectionAgent()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -253,6 +260,83 @@ async def pipeline_status():
         "stats": orchestrator.stats if orchestrator else {},
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+# External Threat Intelligence endpoint
+@app.post("/external-threat-intel")
+async def external_threat_intel(request: Request):
+    """
+    Query external threat intelligence sources for a given threat
+    Uses ExternalThreatIntelligenceAgent to check:
+    - VirusTotal
+    - AlienVault OTX
+    - MITRE ATT&CK
+    - AbuseIPDB
+    - URLhaus
+    
+    Args:
+        request: Request containing JSON with 'threat' field
+    
+    Returns:
+        External threat intelligence data
+    """
+    try:
+        data = await request.json()
+        threat = data.get("threat", "")
+        
+        if not threat.strip():
+            raise HTTPException(status_code=400, detail="Threat cannot be empty")
+        
+        logger.info(f"🔍 Querying external threat intel for: {threat[:100]}...")
+        
+        # Use the real agent to query external sources
+        findings = ext_threat_agent.query_external_sources(threat)
+        result = ext_threat_agent.format_output(findings)
+        
+        logger.info("✅ External threat intelligence retrieved successfully")
+        return result
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON request")
+    except Exception as e:
+        logger.error(f"❌ Error fetching threat intelligence: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+
+
+# Anomaly Detection endpoint
+@app.post("/anomaly-detection")
+async def anomaly_detection(request: Request):
+    """
+    Detect anomalies and novel threats using AnomalyDetectionAgent
+    Identifies new, unknown, or zero-day threats not in training data
+    
+    Args:
+        request: Request containing JSON with 'threat' field
+    
+    Returns:
+        Anomaly detection results with classification and confidence
+    """
+    try:
+        data = await request.json()
+        threat = data.get("threat", "")
+        
+        if not threat.strip():
+            raise HTTPException(status_code=400, detail="Threat cannot be empty")
+        
+        logger.info(f"🧬 Analyzing anomaly for: {threat[:100]}...")
+        
+        # Use the real agent to detect anomalies
+        result = anomaly_agent.detect_anomaly(threat)
+        formatted_result = anomaly_agent.format_output(result)
+        
+        logger.info(f"✅ Anomaly detection complete. Classification: {result['classification']}, Novel: {result['novel']}")
+        return formatted_result
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON request")
+    except Exception as e:
+        logger.error(f"❌ Error in anomaly detection: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
 
 def generate_mock_result(log_text: str) -> dict:
