@@ -1,5 +1,8 @@
+# Request/Response Models
+
 """
-FastAPI Server for MITRE Security Pipeline
+FastAPI Server for Multi Agentic System
+
 Provides REST API endpoints for the frontend
 """
 
@@ -10,11 +13,12 @@ import logging
 from datetime import datetime
 from typing import Optional
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from fastapi import UploadFile, File
+from fastapi import Body
 
 # Add current directory to path
 import sys
@@ -39,7 +43,7 @@ anomaly_agent = AnomalyDetectionAgent()
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown"""
     global orchestrator, init_error
-    logger.info("🚀 Starting MITRE Security Pipeline API Server...")
+    logger.info("🚀 Starting Multi Agentic System API Server...")
     
     try:
         from main_orchestrator import MITREOrchestrator
@@ -54,7 +58,11 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Shutting down API Server...")
 
 
+
 # Request/Response Models
+class RemoveFileRequest(BaseModel):
+    filepath: str
+
 class AnalyzeRequest(BaseModel):
     log_text: str
 
@@ -104,7 +112,7 @@ class PipelineResult(BaseModel):
 
 # Create FastAPI app
 app = FastAPI(
-    title="MITRE Security Pipeline API",
+    title="Multi Agentic System API",
     description="REST API for threat detection and response",
     version="1.0.0",
     lifespan=lifespan
@@ -126,7 +134,7 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "service": "MITRE Security Pipeline API",
+        "service": "Multi Agentic System API",
         "timestamp": datetime.utcnow().isoformat()
     }
 
@@ -339,6 +347,55 @@ async def anomaly_detection(request: Request):
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
 
+# Log file upload endpoint for file analysis
+@app.post("/analyze-file", response_model=PipelineResult)
+async def analyze_file(file: UploadFile = File(...)):
+    """
+    Analyze a security log file through the MITRE pipeline via file upload
+    Accepts a text file upload, saves it to output/, reads its content, and processes as a log
+    """
+    try:
+        content = await file.read()
+        log_text = content.decode(errors="ignore")
+        if not log_text.strip():
+            raise HTTPException(status_code=400, detail="Uploaded file is empty or not readable as text")
+        # Save uploaded file to output directory
+        upload_dir = os.path.join(os.getcwd(), "output")
+        os.makedirs(upload_dir, exist_ok=True)
+        save_path = os.path.join(upload_dir, file.filename)
+        with open(save_path, "wb") as f:
+            f.write(content)
+        # Reuse the same logic as /analyze
+        return await analyze(AnalyzeRequest(log_text=log_text))
+    except Exception as e:
+        logger.error(f"❌ Error processing uploaded file: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error processing uploaded file: {str(e)}")
+
+
+
+
+
+
+@app.post("/remove-uploaded-file")
+async def remove_uploaded_file(file_req: RemoveFileRequest = Body(...)):
+    """
+    Remove the uploaded file from the given path if it exists.
+    SECURITY WARNING: This only allows deleting files inside the user's Documents directory.
+    """
+    import os
+    file_path = file_req.filepath
+    # Only allow deleting files inside the user's Documents directory for safety
+    allowed_dir = os.path.expanduser(r"~\Documents")
+    abs_file_path = os.path.abspath(file_path)
+    if not abs_file_path.startswith(allowed_dir):
+        return {"status": "forbidden", "message": "File deletion outside Documents directory is not allowed."}
+    if os.path.exists(abs_file_path):
+        os.remove(abs_file_path)
+        return {"status": "success", "message": f"File '{abs_file_path}' removed."}
+    else:
+        return {"status": "not_found", "message": f"File '{abs_file_path}' does not exist."}
+
+
 def generate_mock_result(log_text: str) -> dict:
     """Generate mock analysis result for testing"""
     import random
@@ -437,7 +494,7 @@ def generate_mock_result(log_text: str) -> dict:
 async def root():
     """Root endpoint - API documentation"""
     return {
-        "api": "MITRE Security Pipeline API",
+        "api": "Multi Agentic System API",
         "version": "1.0.0",
         "endpoints": {
             "health": "/health",

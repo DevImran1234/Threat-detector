@@ -1,7 +1,9 @@
 #!/bin/bash
-# Start the API Server for MITRE Security Pipeline
+# Start the API Server for Multi Agentic System
 
-echo "🚀 Starting MITRE Security Pipeline API Server..."
+
+echo "🚀 Starting Multi Agentic System
+ API Server..."
 echo "API will be available at http://localhost:8000"
 echo "API Documentation at http://localhost:8000/docs"
 echo ""

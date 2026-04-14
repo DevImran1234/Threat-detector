@@ -1,6 +1,8 @@
-# MITRE Security Pipeline - React Frontend
+# Multi Agentic System
+ - React Frontend
 
-A modern, responsive React.js dashboard for the MITRE Security Pipeline threat detection and response system.
+A modern, responsive React.js dashboard for the Multi Agentic System
+ threat detection and response system.
 
 ## Features
 

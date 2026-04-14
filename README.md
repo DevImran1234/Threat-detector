@@ -1,4 +1,5 @@
-# 🛡️ MITRE Security Pipeline - Complete System
+# 🛡️ Multi Agentic System
+ - Complete System
 
 Advanced AI-powered threat detection and response system combining:
 - **Agent 1**: Log Classification (LSTM + Word2Vec)

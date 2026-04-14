@@ -1,7 +1,8 @@
 # Start the API Server
 # This script starts the FastAPI server on port 8000
 
-Write-Host "🚀 Starting MITRE Security Pipeline API Server..." -ForegroundColor Green
+Write-Host "🚀 Starting Multi Agentic System
+ API Server..." -ForegroundColor Green
 Write-Host "API will be available at http://localhost:8000" -ForegroundColor Cyan
 Write-Host "API Documentation at http://localhost:8000/docs" -ForegroundColor Cyan
 Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow

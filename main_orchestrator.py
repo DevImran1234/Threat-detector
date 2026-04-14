@@ -1,5 +1,6 @@
 """
-Main Orchestrator for MITRE Security Pipeline
+Main Orchestrator for Multi Agentic System
+
 Coordinates Agent 1 → MITRE Mapper → Agent 2
 """
 
@@ -26,7 +27,8 @@ class MITREOrchestrator:
         self.mitre_mapper = None
         self.agent2 = None
         
-        print("MITRE Security Pipeline Orchestrator initialized")
+        ("Orchestrator initialized")
+        print("Multi Agentic System Orchestrator initialized")
     
     def load_config(self, config_file: str) -> Dict:
         """Load configuration from YAML file"""

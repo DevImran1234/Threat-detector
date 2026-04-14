@@ -28,19 +28,31 @@ export const MITRETechniquesPanel: React.FC<MITRETechniquesPanelProps> = ({
             </div>
             <div className="techniques-list">
               {result.mitre_techniques.map((tech, idx) => (
-                <div key={idx} className="technique-item">
-                  <div className="technique-header">
-                    <span className="technique-id">{tech.technique_id}</span>
-                    <span className="technique-name">{tech.name}</span>
+                <div
+                  key={idx}
+                  className="technique-item"
+                  style={{
+                    background: '#181c26',
+                    border: '2px solid #1976d2',
+                    borderRadius: '10px',
+                    marginBottom: '0.7em',
+                    boxShadow: '0 2px 12px rgba(25, 118, 210, 0.08)',
+                    color: '#e3f2fd',
+                    padding: '1.2em 1.5em',
+                  }}
+                >
+                  <div className="technique-header" style={{ alignItems: 'center' }}>
+                    <span className="technique-id" style={{ background: '#1976d2', color: '#fff', fontWeight: 800, fontSize: '1.05em', borderRadius: 6, padding: '0.25em 0.8em', marginRight: 12 }}>{tech.technique_id}</span>
+                    <span className="technique-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.08em', letterSpacing: '0.01em' }}>{tech.name}</span>
                   </div>
-                  <div className="technique-details">
+                  <div className="technique-details" style={{ marginTop: 10 }}>
                     <div className="technique-tactic">
-                      <span className="label">Tactic:</span>
-                      <span className="value">{tech.tactic}</span>
+                      <span className="label" style={{ color: '#90caf9', fontWeight: 700 }}>Tactic:</span>
+                      <span className="value" style={{ color: '#fff', fontWeight: 600, marginLeft: 6 }}>{tech.tactic}</span>
                     </div>
                     <div className="technique-confidence">
-                      <span className="label">Confidence:</span>
-                      <span className="value">
+                      <span className="label" style={{ color: '#ffd54f', fontWeight: 700, marginLeft: 18 }}>Confidence:</span>
+                      <span className="value" style={{ color: '#fff', fontWeight: 700, marginLeft: 6 }}>
                         {(tech.confidence * 100).toFixed(1)}%
                       </span>
                     </div>

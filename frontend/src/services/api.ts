@@ -1,5 +1,11 @@
 /**
- * API Service for MITRE Security Pipeline
+ * API Service for Multi Agentic System
+
+ * Handles communication with the Python backend
+ */
+/**
+ * API Service for Multi Agentic System
+
  * Handles communication with the Python backend
  */
 
@@ -45,6 +51,18 @@ export interface PipelineResult {
 }
 
 class APIService {
+    async analyzeLogFile(file: File): Promise<PipelineResult> {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch(`${API_BASE_URL}/analyze-file`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      return await response.json();
+    }
   async getExternalThreatIntel(threat: string): Promise<any> {
     try {
       const response = await fetch(`${API_BASE_URL}/external-threat-intel`, {
@@ -124,6 +142,20 @@ class APIService {
       console.error('Error fetching stats:', error);
       throw error;
     }
+  }
+
+  async removeUploadedFile(filepath: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/remove-uploaded-file`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ filepath }),
+    });
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+    return await response.json();
   }
 }
 

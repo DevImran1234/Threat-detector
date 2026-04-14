@@ -1,9 +1,11 @@
 @echo off
-REM Start MITRE Security Pipeline - Frontend & Backend
+REM Start Multi Agentic System
+ - Frontend & Backend
 
 echo.
 echo ======================================
-echo MITRE Security Pipeline Launcher
+echo Multi Agentic System
+ Launcher
 echo ======================================
 echo.
 

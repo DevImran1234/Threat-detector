@@ -23,7 +23,9 @@ export const ThreatScoreGauge: React.FC<ThreatScoreGaugeProps> = ({
 
   return (
     <div className="threat-score-container">
-      <h3>⚠️ Threat Score</h3>
+      <h3 style={{
+        color:'#fff'
+      }}>⚠️ Threat Score</h3>
 
       <div className="gauge-wrapper">
         <div className="gauge">

@@ -1,5 +1,6 @@
 """
-Utility functions for MITRE Security Pipeline
+Utility functions for Multi Agentic System
+
 """
 
 import json

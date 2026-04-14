@@ -1,8 +1,10 @@
 #!/usr/bin/env pwsh
-# Start MITRE Security Pipeline - Frontend & Backend
+# Start Multi Agentic System
+ - Frontend & Backend
 
 Write-Host "`n======================================" -ForegroundColor Cyan
-Write-Host "MITRE Security Pipeline Launcher" -ForegroundColor Cyan
+Write-Host "Multi Agentic System
+ Launcher" -ForegroundColor Cyan
 Write-Host "======================================`n" -ForegroundColor Cyan
 
 # Check if we're in the right directory
@@ -14,7 +16,8 @@ if (-not (Test-Path "frontend")) {
 }
 
 # Display startup info
-Write-Host "[*] Starting MITRE Security Pipeline Services..." -ForegroundColor Yellow
+Write-Host "[*] Starting Multi Agentic System
+ Services..." -ForegroundColor Yellow
 
 # Start Backend in a new terminal
 Write-Host "[1/2] Starting Backend (Agent-1 Pipeline)..." -ForegroundColor Green
@@ -22,7 +25,8 @@ $backendProcess = Start-Process powershell -ArgumentList {
     Set-Location "c:\Users\Admin\Documents\Agent-1"
     .\venv\Scripts\Activate.ps1
     Write-Host "`n🚀 Activating Virtual Environment..." -ForegroundColor Green
-    Write-Host "📊 Starting MITRE Security Pipeline..." -ForegroundColor Green
+    Write-Host "📊 Starting Multi Agentic System
+..." -ForegroundColor Green
     python run_pipeline.py
     Read-Host "`nPress Enter to close this window"
 } -PassThru -WindowStyle Normal

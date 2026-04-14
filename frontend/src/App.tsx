@@ -1,4 +1,96 @@
+// Helper to render anomaly detection result in a readable format
+function renderAnomalyResult(anomaly: any) {
+  if (!anomaly || typeof anomaly !== 'object') return null;
+  if (typeof anomaly === 'string') return <span>{anomaly}</span>;
+  if (anomaly.error) return <span style={{ color: 'red' }}>{anomaly.error}</span>;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #101522 60%, #1a2236 100%)',
+      border: '1px solid #223',
+      borderRadius: '14px',
+      padding: '1.5em 2em',
+      margin: '1em 0',
+      color: '#e3f2fd',
+      fontSize: '1.08em',
+      boxShadow: '0 4px 24px rgba(20,30,60,0.18)',
+      width: '100%',
+      maxWidth: '900px',
+      overflowX: 'auto',
+    }}>
+      {Object.entries(anomaly).map(([key, value]) => (
+        <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.7em', marginBottom: '0.5em' }}>
+          <span style={{ fontWeight: 700, color: '#ffb74d', minWidth: 160, letterSpacing: '0.01em' }}>{key.replace(/_/g, ' ')}:</span>
+          <span style={{ color: '#fff', wordBreak: 'break-word', fontWeight: 500 }}>
+            {typeof value === 'object' && value !== null
+              ? Array.isArray(value)
+                ? value.length > 0
+                  ? value.join(', ')
+                  : <span style={{ color: '#bdbdbd' }}>None</span>
+                : (
+                  <div style={{ marginLeft: 8 }}>
+                    {Object.entries(value).map(([k, v]) => (
+                      <div key={k}>
+                        <span style={{ fontWeight: 600, color: '#ffd54f' }}>{k.replace(/_/g, ' ')}:</span> {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
+                      </div>
+                    ))}
+                  </div>
+                )
+              : String(value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 import { useState, useEffect } from 'react';
+// Helper to render external threat intelligence in a readable format
+function renderExternalIntel(intel: any) {
+  if (!intel || typeof intel !== 'object') return null;
+  // If it's a simple error or string
+  if (typeof intel === 'string') return <span>{intel}</span>;
+  if (intel.error) return <span style={{ color: 'red' }}>{intel.error}</span>;
+
+  // Render as a styled card/list
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #101522 60%, #1a2236 100%)',
+      border: '1px solid #223',
+      borderRadius: '14px',
+      padding: '1.5em 2em',
+      margin: '1em 0',
+      color: '#e3f2fd',
+      fontSize: '1.08em',
+      boxShadow: '0 4px 24px rgba(20,30,60,0.18)',
+      width: '100%',
+      maxWidth: '900px',
+      overflowX: 'auto',
+    }}>
+      {Object.entries(intel).map(([key, value]) => (
+        <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.7em', marginBottom: '0.5em' }}>
+          <span style={{ fontWeight: 700, color: '#64b5f6', minWidth: 160, letterSpacing: '0.01em' }}>{key.replace(/_/g, ' ')}:</span>
+          <span style={{ color: '#fff', wordBreak: 'break-word', fontWeight: 500 }}>
+            {typeof value === 'object' && value !== null
+              ? Array.isArray(value)
+                ? value.length > 0
+                  ? value.join(', ')
+                  : <span style={{ color: '#bdbdbd' }}>None</span>
+                : (
+                  <div style={{ marginLeft: 8 }}>
+                    {Object.entries(value).map(([k, v]) => (
+                      <div key={k}>
+                        <span style={{ fontWeight: 600, color: '#4dd0e1' }}>{k.replace(/_/g, ' ')}:</span> {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
+                      </div>
+                    ))}
+                  </div>
+                )
+              : String(value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 import type { PipelineResult } from './services/api';
 import { LogInput } from './components/LogInput';
 import { ClassificationCard } from './components/ClassificationCard';
@@ -20,6 +112,75 @@ function App() {
   const [anomalyResult, setAnomalyResult] = useState<any>(null);
   const [intelLoading, setIntelLoading] = useState(false);
   const [anomalyLoading, setAnomalyLoading] = useState(false);
+  const [uploadedFilename, setUploadedFilename] = useState<string | null>(null);
+  const [uploadedFilePath, setUploadedFilePath] = useState<string | null>(null);
+  const handleAnalyzeLogFile = async (file: File) => {
+    if (!isHealthy) {
+      setError('Backend service is unavailable. Please ensure the API server is running.');
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    setExternalIntel(null);
+    setAnomalyResult(null);
+    try {
+      const analysisResult = await APIService.analyzeLogFile(file);
+      setResult(analysisResult);
+      // Fetch external threat intelligence
+      setIntelLoading(true);
+      try {
+        const intel = await APIService.getExternalThreatIntel(analysisResult.log_preview || '');
+        setExternalIntel(intel);
+      } catch (intelErr) {
+        setExternalIntel({ error: 'Failed to fetch external threat intelligence.' });
+      }
+      setIntelLoading(false);
+      // Fetch anomaly detection
+      setAnomalyLoading(true);
+      try {
+        const anomaly = await APIService.detectAnomaly(analysisResult.log_preview || '');
+        setAnomalyResult(anomaly);
+      } catch (anomalyErr) {
+        setAnomalyResult({ error: 'Failed to detect anomaly.' });
+      }
+      setAnomalyLoading(false);
+      setUploadedFilename(file.name);
+      // Try to get the full path if available (Electron, or custom file picker)
+      // For browsers, this is not possible for security reasons, so we use the name as a fallback
+      // If you have a custom upload API that returns the server path, set it here
+      if ((file as any).path) {
+        setUploadedFilePath((file as any).path);
+      } else {
+        // Assume file is saved in output/ on backend
+        setUploadedFilePath(`C:/Users/Admin/Documents/Agent-1/output/${file.name}`);
+      }
+    } catch (err) {
+      console.error('Analysis error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(
+        `Failed to analyze log file: ${errorMessage}. Please check backend connection and try again.`
+      );
+      setResult(null);
+      setIsHealthy(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveUploadedFile = async (filename: string) => {
+    try {
+      if (!uploadedFilePath) {
+        alert('No file path available for removal.');
+        return;
+      }
+      await APIService.removeUploadedFile(uploadedFilePath);
+      setUploadedFilename(null);
+      setUploadedFilePath(null);
+      alert(`File '${filename}' removed from server.`);
+    } catch (err) {
+      alert(`Failed to remove file: ${filename}`);
+    }
+  };
 
   // Check backend health on mount
   useEffect(() => {
@@ -73,6 +234,7 @@ function App() {
         setAnomalyResult({ error: 'Failed to detect anomaly.' });
       }
       setAnomalyLoading(false);
+      setUploadedFilename(null);
     } catch (err) {
       console.error('Analysis error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -90,7 +252,8 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-content">
-          <h1>🛡️ MITRE Security Pipeline</h1>
+          <h1>🛡️ Multi Agentic System
+</h1>
           <p>Advanced Threat Detection & Response System</p>
         </div>
         <div className="header-status">
@@ -115,87 +278,62 @@ function App() {
           </div>
         )}
 
-        <div className="content-grid">
-          <aside className="sidebar">
-            <LogInput onAnalyze={handleAnalyzeLog} isLoading={isLoading} />
-          </aside>
-
-          <article className="main-content">
-            {!result ? (
-              <div className="empty-state">
-                <div className="empty-icon">🔍</div>
-                <h2>Enter a security log to begin analysis</h2>
-                <p>
-                  The MITRE Security Pipeline will classify the log, map it to ATT&CK
-                  techniques, and recommend response actions.
-                </p>
+        <div className="unified-grid">
+          <div className="grid-item">
+            <LogInput onAnalyze={handleAnalyzeLog} onAnalyzeFile={handleAnalyzeLogFile} isLoading={isLoading} />
+          </div>
+          {result ? <>
+            <div className="grid-item">
+              <ClassificationCard classification={result.agent1} />
+            </div>
+            <div className="grid-item">
+              <ThreatScoreGauge
+                score={result.mitre.risk_score}
+                threatLevel={result.summary.threat_level}
+              />
+            </div>
+            <div className="grid-item span-3">
+              <MITRETechniquesPanel result={result.mitre} />
+            </div>
+            <div className="grid-item span-3">
+              <div className="external-intel-panel">
+                <h3>🌐 External Threat Intelligence</h3>
+                {intelLoading ? (
+                  <div>Loading external intelligence...</div>
+                ) : (
+                  renderExternalIntel(externalIntel)
+                )}
               </div>
-            ) : (
-              <div className="results-container">
-                <div className="results-header">
-                  <h2>Analysis Results</h2>
-                  <div className="metadata">
-                    <span>ID: {result.log_id}</span>
-                    <span>Time: {(result.processing_time * 1000).toFixed(0)}ms</span>
-                  </div>
-                </div>
-
-                <div className="results-grid">
-                  <div className="grid-item span-2">
-                    <ClassificationCard classification={result.agent1} />
-                  </div>
-
-                  <div className="grid-item">
-                    <ThreatScoreGauge
-                      score={result.mitre.risk_score}
-                      threatLevel={result.summary.threat_level}
-                    />
-                  </div>
-
-                  <div className="grid-item span-2">
-                    <MITRETechniquesPanel result={result.mitre} />
-                  </div>
-
-                  {/* External Threat Intelligence Section */}
-                  <div className="grid-item span-2">
-                    <div className="external-intel-panel">
-                      <h3>🌐 External Threat Intelligence</h3>
-                      {intelLoading ? (
-                        <div>Loading external intelligence...</div>
-                      ) : externalIntel && !externalIntel.error ? (
-                        <pre style={{ whiteSpace: 'pre-wrap', background: '#f8f8f8', padding: '1em', borderRadius: '8px' }}>{JSON.stringify(externalIntel, null, 2)}</pre>
-                      ) : (
-                        <div style={{ color: 'red' }}>{externalIntel?.error}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Anomaly Detection Section */}
-                  <div className="grid-item span-2">
-                    <div className="anomaly-detection-panel">
-                      <h3>🧬 Anomaly Detection</h3>
-                      {anomalyLoading ? (
-                        <div>Detecting anomaly...</div>
-                      ) : anomalyResult && !anomalyResult.error ? (
-                        <pre style={{ whiteSpace: 'pre-wrap', background: '#f8f8f8', padding: '1em', borderRadius: '8px' }}>{JSON.stringify(anomalyResult, null, 2)}</pre>
-                      ) : (
-                        <div style={{ color: 'red' }}>{anomalyResult?.error}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid-item span-2">
-                    <ResponseActionsPanel actions={result.agent2.actions} />
-                  </div>
-                </div>
+            </div>
+            <div className="grid-item span-3">
+              <div className="anomaly-detection-panel">
+                <h3>🧬 Anomaly Detection</h3>
+                {anomalyLoading ? (
+                  <div>Detecting anomaly...</div>
+                ) : (
+                  renderAnomalyResult(anomalyResult)
+                )}
               </div>
-            )}
-          </article>
+            </div>
+            <div className="grid-item span-3">
+              <ResponseActionsPanel actions={result.agent2.actions} filename={uploadedFilename || undefined} onRemoveFile={handleRemoveUploadedFile} />
+            </div>
+          </> : (
+            <div className="empty-state grid-item span-3">
+              <div className="empty-icon">🔍</div>
+              <h2>Enter a security log to begin analysis</h2>
+              <p>
+                The Multi Agentic System will classify the log, map it to ATT&CK
+                techniques, and recommend response actions.
+              </p>
+            </div>
+          )}
         </div>
       </main>
 
       <footer className="app-footer">
-        <p>MITRE Security Pipeline v1.0 | Powered by Agent 1 (Classification) → MITRE Mapper → Agent 2 (Response)</p>
+        <p>Multi Agentic System
+ v1.0 | Powered by Agent 1 (Classification) → MITRE Mapper → Agent 2 (Response)</p>
       </footer>
     </div>
   );

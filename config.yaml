@@ -1,4 +1,5 @@
-# MITRE Security Pipeline Configuration
+# Multi Agentic System
+ Configuration
 agents:
   agent1:
     enabled: true

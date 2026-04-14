@@ -4,7 +4,8 @@ REM This script starts the Vite dev server on port 5173
 
 echo.
 echo ====================================
-echo   MITRE Security Pipeline Frontend
+echo   Multi Agentic System
+ Frontend
 echo ====================================
 echo.
 echo Starting frontend on http://localhost:5173
