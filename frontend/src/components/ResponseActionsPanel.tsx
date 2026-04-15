@@ -94,8 +94,8 @@ export const ResponseActionsPanel: React.FC<ResponseActionsPanelProps> = ({
 
       {actions && actions.length > 0 && (
         <div className="action-buttons">
-          <button className="btn btn-primary">EXECUTE SELECTED ACTIONS</button>
-          <button className="btn btn-secondary">REVIEW DETAILS</button>
+          {/* <button className="btn btn-primary">EXECUTE SELECTED ACTIONS</button>
+          <button className="btn btn-secondary">REVIEW DETAILS</button> */}
           {filename && onRemoveFile && (
             <button className="btn btn-danger" onClick={() => onRemoveFile(filename)} style={{ marginLeft: 8 }}>
               🗑️ Remove Uploaded File
